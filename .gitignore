@@ -1,0 +1,18 @@
+# Dependencies & build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local env & deployment metadata
+.env
+.env.*
+.vercel/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+
+# Reference media folders (local analysis sources)
+src20/
+pricing.algerian.ref/
+booking.algerian.ref/
