@@ -124,6 +124,15 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/showcase')}
+                  className="text-[#DEC088] transition-colors hover:text-[#F4DA9F]"
+                >
+                  {lang === 'ar' ? 'معرض القوالب (Showcase)' : 'Showcase Template (#1)'}
+                </button>
+              </li>
             </ul>
           </div>
 

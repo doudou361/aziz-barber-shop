@@ -12,8 +12,9 @@ import { Footer } from './components/Footer';
 import { BookingModal } from './components/BookingModal';
 import { InfoModal } from './components/InfoModal';
 import { AboutPage, ExperiencePage, ServicesPage } from './components/SubPages';
+import { ShowcasePage } from './components/ShowcasePage';
 
-const VALID_ROUTES: RoutePath[] = ['/', '/services', '/experience', '/about'];
+const VALID_ROUTES: RoutePath[] = ['/', '/services', '/experience', '/about', '/showcase'];
 
 function readRoute(): RoutePath {
   const path = window.location.pathname as RoutePath;
@@ -139,6 +140,10 @@ export function App() {
             onNavigate={navigate}
             onBookClick={(serviceId, barberId) => openBooking(serviceId, barberId)}
           />
+        )}
+
+        {route === '/showcase' && (
+          <ShowcasePage lang={lang} onNavigate={navigate} />
         )}
       </main>
 

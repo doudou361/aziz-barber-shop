@@ -1,5 +1,5 @@
 export type Language = 'fr' | 'ar';
-export type RoutePath = '/' | '/services' | '/experience' | '/about';
+export type RoutePath = '/' | '/services' | '/experience' | '/about' | '/showcase';
 export type PricingCategoryId =
   | 'coiffure'
   | 'barbe'
