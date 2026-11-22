@@ -33,3 +33,7 @@ AI image generation (`gemini-3.1-flash-image`) was temporarily rate-limited (`42
 
 ### Prompt C — Service Portraits (`service-haircut.webp`, `service-beard.webp`, `service-styling.webp`, 4:5)
 > High-contrast dark studio three-quarter editorial portrait of a sharply groomed gentleman against deep charcoal-black (`#0D0C0B`) fading to `#11100E` at the bottom: (1) razor-clean skin fade in crisp monochrome silver rim light, (2) sculpted tailored beard in dramatic black-and-white studio contrast, (3) classic-modern textured styling backlit with a warm champagne-gold (`#DEC088`) aura. Zero text.
+
+## Generated team illustrations
+
+`barber-portrait-1.jpg`, `barber-portrait-2.jpg`, and `barber-portrait-3.jpg` are optimized copies of fictional portraits generated with the built-in image tool from the user's warm salon image as a style reference. They are labeled “Portrait illustratif” on the site and are not verified likenesses of Aziz, Youcef, or Mohamed. The editable source prompts and original generated PNGs are retained in the local project's `public/assets/ASSET_NOTES.md` and `public/assets/generated-originals/`.

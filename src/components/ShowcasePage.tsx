@@ -135,8 +135,8 @@ An independent website flagship by IronBot for Aziz Barber Shop — built for ta
 
 • Atmospheric hero & bilingual switch — seamless 1-tap toggle between French (LTR) and Arabic (RTL).
 • Zero-gravity 3D instruments — interactive cordless clippers, apothecary oils, and scroll-articulated Japanese steel shears.
-• Transparent DZD tariff menu — 15 services organized across Coiffure, Barbe, Soins du visage, and Soins capillaires.
-• Zero-friction 3-step booking — choose your barber (Aziz, Yacine, or Yousef), check multiple services, and confirm with Full Name & Phone Number only.
+• Transparent DZD tariff menu — 15 services organized across Coiffure, Barbe, Soins du visage, Soins capillaires, and Traçage.
+• Zero-friction 3-step booking — choose your barber (Aziz, Youcef, or Mohamed), check multiple services, and confirm with Full Name & Phone Number only.
 
 Want a tailored website like this for your brand? Send us a DM with "AZIZ" or tap the link in our bio.
 

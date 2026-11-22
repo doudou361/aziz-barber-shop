@@ -5,6 +5,7 @@ import { HeroSection } from './components/HeroSection';
 import { SignatureSection } from './components/SignatureSection';
 import { ServicesSection } from './components/ServicesSection';
 import { PricingSection } from './components/PricingSection';
+import { BarbersSection } from './components/BarbersSection';
 import { CraftSection } from './components/CraftSection';
 import { GroomingExperienceSection } from './components/GroomingExperienceSection';
 import { HaloCtaSection } from './components/HaloCtaSection';
@@ -104,6 +105,7 @@ export function App() {
               lang={lang}
               onReserveService={(serviceId) => openBooking(serviceId)}
             />
+            <BarbersSection lang={lang} onBookClick={(serviceId, barberId) => openBooking(serviceId, barberId)} />
             <CraftSection
               lang={lang}
               onBookClick={() => openBooking('coupe-ciseaux')}

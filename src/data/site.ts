@@ -4,7 +4,8 @@ export type PricingCategoryId =
   | 'coiffure'
   | 'barbe'
   | 'soins-visage'
-  | 'soins-capillaires';
+  | 'soins-capillaires'
+  | 'tracage';
 
 export interface BiText {
   fr: string;
@@ -17,7 +18,7 @@ export interface ServiceItem {
   shortTitle: BiText;
   category: PricingCategoryId;
   durationMin: number;
-  priceDa: number;
+  priceDa: number | null;
   summary: BiText;
   details: BiText;
   includes: { fr: string[]; ar: string[] };
@@ -61,9 +62,18 @@ export function t(text: BiText, lang: Language): string {
   return text[lang];
 }
 
-export function formatPrice(priceDa: number, lang: Language): string {
+export function formatPrice(priceDa: number | null, lang: Language): string {
+  if (priceDa === null) return lang === 'ar' ? 'يُحدد لاحقاً' : 'À confirmer';
   const formatted = priceDa.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return lang === 'ar' ? `${formatted} دج` : `${formatted} DA`;
+}
+
+export function formatSelectionPrice(items: ServiceItem[], lang: Language): string {
+  const knownTotal = items.reduce((total, item) => total + (item.priceDa ?? 0), 0);
+  const hasPendingPrice = items.some((item) => item.priceDa === null);
+  if (!hasPendingPrice) return formatPrice(knownTotal, lang);
+  if (knownTotal === 0) return formatPrice(null, lang);
+  return `${formatPrice(knownTotal, lang)} + ${formatPrice(null, lang)}`;
 }
 
 export function formatDuration(minutes: number, lang: Language): string {
@@ -75,6 +85,7 @@ export const PRICING_CATEGORIES: { id: PricingCategoryId; label: BiText }[] = [
   { id: 'barbe', label: { fr: 'Barbe', ar: 'اللحية' } },
   { id: 'soins-visage', label: { fr: 'Soins du visage', ar: 'العناية بالوجه' } },
   { id: 'soins-capillaires', label: { fr: 'Soins capillaires', ar: 'العناية بالشعر' } },
+  { id: 'tracage', label: { fr: 'Traçage', ar: 'التحديد' } },
 ];
 
 /**
@@ -87,7 +98,7 @@ export const SITE_CONFIG = {
     subname: { fr: 'BARBER HOUSE', ar: 'بيت الحلاقة' },
     phoneDisplay: '0799 24 55 43',
     phoneRaw: '0799245543',
-    phoneHref: 'tel:0799245543',
+    phoneHref: 'tel:+213799245543',
     address: {
       fr: 'Alger, Algérie — Salon Aziz Barber Shop',
       ar: 'الجزائر العاصمة — صالون عزيز باربر شوب',
@@ -402,9 +413,9 @@ export const ALL_SERVICES: ServiceItem[] = [
     id: 'tracage',
     title: { fr: 'Traçage (fils, cire...)', ar: 'تحديد بالخيط والشمع' },
     shortTitle: { fr: 'Traçage', ar: 'تحديد خيط/شمع' },
-    category: 'barbe',
+    category: 'tracage',
     durationMin: 15,
-    priceDa: 500,
+    priceDa: null,
     summary: {
       fr: 'Finition nette des pommettes, sourcils et contours au fil ou à la cire pour un résultat ultra-propre.',
       ar: 'تنظيف وتحديد فائق الدقة للوجنتين والحاجبين بالخيط أو الشمع لإطلالة نظيفة تدوم.',
@@ -629,13 +640,13 @@ export const CRAFT_PILLARS: CraftPillar[] = [
     eyebrow: { fr: 'LE SAVOIR-FAIRE · 03', ar: 'الحرفية · 03' },
     title: { fr: 'TEMPS MAÎTRISÉ', ar: 'عناية بلا استعجال' },
     description: {
-      fr: 'Chez Aziz Barber Shop, chaque rendez-vous bénéficie d’un créneau dédié avec Aziz, Yacine ou Yousef pour soigner chaque contour.',
-      ar: 'في عزيز باربر شوب، لكل موعد وقته الكامل مع عزيز أو ياسين أو يوسف للاهتمام بأدق التفاصيل.',
+      fr: 'Chez Aziz Barber Shop, chaque rendez-vous bénéficie d’un créneau dédié avec Aziz, Youcef ou Mohamed pour soigner chaque contour.',
+      ar: 'في عزيز باربر شوب، لكل موعد وقته الكامل مع عزيز أو يوسف أو محمد للاهتمام بأدق التفاصيل.',
     },
     bladeOpenDeg: 58,
     shearsTiltDeg: -26,
     statLabel: { fr: 'Maîtres Barbiers', ar: 'فريق الحلاقين' },
-    statValue: { fr: 'Aziz · Yacine · Yousef', ar: 'عزيز · ياسين · يوسف' },
+    statValue: { fr: 'Aziz · Youcef · Mohamed', ar: 'عزيز · يوسف · محمد' },
   },
   {
     id: 'bespoke-finish',
@@ -653,47 +664,47 @@ export const CRAFT_PILLARS: CraftPillar[] = [
 ];
 
 /**
- * MASTER BARBERS — Exact requested names: Aziz, Yacine, Yousef
+ * MASTER BARBERS — Aziz, Youcef, Mohamed
  */
 export const MASTER_BARBERS: BarberProfile[] = [
   {
     id: 'aziz',
     name: 'Aziz',
     nameAr: 'عزيز',
-    role: { fr: 'Fondateur & Maître Barbier', ar: 'المؤسس وحلاق رئيسي' },
-    experience: { fr: 'Coupe Signature & Ciseaux', ar: 'قصات احترافية وقص بالمقص' },
+    role: { fr: 'Barbier', ar: 'حلّاق' },
+    experience: { fr: 'Coupe & barbe', ar: 'الحلاقة واللحية' },
     specialty: {
-      fr: 'Architecture de coupe, dégradés sur mesure et soins complets Barber House.',
-      ar: 'تصميم القصات المخصصة، التدريج المتقن وطقوس العناية الكاملة.',
+      fr: 'Un moment de soin adapté à votre style.',
+      ar: 'لحظة عناية تناسب أسلوبك.',
     },
-    availability: { fr: 'Sam – Ven', ar: 'السبت – الجمعة' },
-    image: '/assets/atelier-cut.webp',
+    availability: { fr: 'Sur rendez-vous', ar: 'حسب الموعد' },
+    image: '/assets/barber-portrait-1.jpg',
   },
   {
-    id: 'yacine',
-    name: 'Yacine',
-    nameAr: 'ياسين',
-    role: { fr: 'Spécialiste Dégradé & Style', ar: 'خبير التدريج والتصفيف العصري' },
-    experience: { fr: 'Dégradé Zéro & Coupes Modernes', ar: 'تدريج عصري وقصات حديثة' },
-    specialty: {
-      fr: 'Dégradés américains précis, contours nets et brushing moderne.',
-      ar: 'تدريج عصري متقن، تحديد حاد للحواف وتصفيف حديث.',
-    },
-    availability: { fr: 'Sam – Jeu', ar: 'السبت – الخميس' },
-    image: '/assets/service-haircut.webp',
-  },
-  {
-    id: 'yousef',
-    name: 'Yousef',
+    id: 'youcef',
+    name: 'Youcef',
     nameAr: 'يوسف',
-    role: { fr: 'Expert Barbe, Rasoir & Soins', ar: 'خبير اللحية والموس والعلاجات' },
-    experience: { fr: 'Barbe, Traçage & Soins Visage', ar: 'اللحية، التحديد وعناية البشرة' },
+    role: { fr: 'Barbier', ar: 'حلّاق' },
+    experience: { fr: 'Coupe & barbe', ar: 'الحلاقة واللحية' },
     specialty: {
-      fr: 'Rituel soin barbe, rasage traditionnel au coupe-choux, traçage fil/cire et soins visage.',
-      ar: 'طقوس العناية باللحية، الحلاقة بالموس، التحديد بالخيط والشمع وعلاجات الوجه.',
+      fr: 'Un moment de soin adapté à votre style.',
+      ar: 'لحظة عناية تناسب أسلوبك.',
     },
-    availability: { fr: 'Sam – Ven', ar: 'السبت – الجمعة' },
-    image: '/assets/service-beard.webp',
+    availability: { fr: 'Sur rendez-vous', ar: 'حسب الموعد' },
+    image: '/assets/barber-portrait-2.jpg',
+  },
+  {
+    id: 'mohamed',
+    name: 'Mohamed',
+    nameAr: 'محمد',
+    role: { fr: 'Barbier', ar: 'حلّاق' },
+    experience: { fr: 'Coupe & barbe', ar: 'الحلاقة واللحية' },
+    specialty: {
+      fr: 'Un moment de soin adapté à votre style.',
+      ar: 'لحظة عناية تناسب أسلوبك.',
+    },
+    availability: { fr: 'Sur rendez-vous', ar: 'حسب الموعد' },
+    image: '/assets/barber-portrait-3.jpg',
   },
 ];
 

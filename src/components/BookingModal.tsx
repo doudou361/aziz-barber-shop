@@ -14,8 +14,10 @@ import {
   ALL_SERVICES,
   formatDuration,
   formatPrice,
+  formatSelectionPrice,
   Language,
   MASTER_BARBERS,
+  PRICING_CATEGORIES,
   SITE_CONFIG,
   t,
   TIME_SLOTS,
@@ -55,7 +57,7 @@ const COPY = {
   step1Title: { fr: 'Choix des services', ar: 'اختيار الخدمات' },
   step2Title: { fr: 'Date et horaire', ar: 'التاريخ والوقت' },
   step3Title: { fr: 'Vos coordonnées', ar: 'معلوماتك الشخصية' },
-  step4Title: { fr: 'Réservation enregistrée', ar: 'تم تسجيل الحجز' },
+  step4Title: { fr: 'Récapitulatif de démonstration', ar: 'ملخص تجريبي' },
   barberLabel: { fr: 'Choix du barbier', ar: 'اختر الحلاق' },
   anyBarber: { fr: 'Aziz Barber Shop — Premier barbier disponible', ar: 'عزيز باربر شوب — أول حلاق متاح' },
   servicesDropdownPlaceholder: { fr: 'Sélectionner vos prestations', ar: 'اختر الخدمات المطلوبة' },
@@ -66,7 +68,7 @@ const COPY = {
   validateList: { fr: 'Valider', ar: 'تأكيد الاختيار' },
   back: { fr: 'Retour', ar: 'رجوع' },
   continue: { fr: 'Continuer', ar: 'متابعة' },
-  confirm: { fr: 'Confirmer la réservation', ar: 'تأكيد الحجز' },
+  confirm: { fr: 'Afficher le récapitulatif', ar: 'عرض الملخص' },
   dateLabel: { fr: 'Choisissez la date', ar: 'اختر اليوم' },
   timeLabel: { fr: 'Choisissez le créneau', ar: 'اختر التوقيت' },
   fullName: { fr: 'Nom complet *', ar: 'الاسم الكامل *' },
@@ -78,6 +80,10 @@ const COPY = {
     ar: 'يرجى إدخال الاسم الكامل ورقم هاتف صحيح.',
   },
   demoBadge: { fr: 'APERÇU DE RÉSERVATION DÉMO', ar: 'معاينة حجز تجريبي' },
+  demoWarning: {
+    fr: 'Aperçu de démonstration : aucun rendez-vous n’est enregistré et les créneaux ne sont pas vérifiés. Pour réserver, appelez le salon.',
+    ar: 'معاينة تجريبية: لا يتم تسجيل المواعيد ولا التحقق من توفرها. للحجز، يرجى الاتصال بالصالون.',
+  },
   demoNotice: {
     fr: 'Cette réservation est un aperçu interactif de démonstration. Pour une confirmation immédiate par téléphone, appelez directement le salon.',
     ar: 'هذا الحجز عبارة عن معاينة تفاعلية تجريبية. للتأكيد الفوري يرجى الاتصال مباشرة بالصالون.',
@@ -121,7 +127,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [guestNotes, setGuestNotes] = useState('');
-  const [refCode, setRefCode] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -129,7 +134,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setStep(1);
       setServiceListOpen(true);
       setBarberMenuOpen(false);
-      setRefCode(null);
       setErrorMsg(null);
       if (initialServiceId) {
         setSelectedServiceIds([initialServiceId]);
@@ -161,7 +165,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   const chosenServices = ALL_SERVICES.filter((s) => selectedServiceIds.includes(s.id));
-  const totalPrice = chosenServices.reduce((sum, s) => sum + s.priceDa, 0);
+  const totalPriceDisplay = formatSelectionPrice(chosenServices, lang);
   const totalMinutes = chosenServices.reduce((sum, s) => sum + s.durationMin, 0);
 
   const chosenBarberObj = MASTER_BARBERS.find((b) => b.id === barberId);
@@ -184,7 +188,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       return;
     }
     setErrorMsg(null);
-    setRefCode(`AZ-${Math.floor(100000 + Math.random() * 900000)}`);
     setStep(4);
   };
 
@@ -245,10 +248,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             {/* Body */}
             <div className="luxury-scroll flex-1 overflow-y-auto px-6 py-5">
+              <div className="mb-5 rounded-[3px] border border-[#DEC088]/30 bg-[#17130D] p-4 text-[13px] leading-relaxed text-[#EDE0C4]">
+                <p>{t(COPY.demoWarning, lang)}</p>
+                <a href={SITE_CONFIG.brand.phoneHref} dir="ltr" className="mt-2 inline-block font-semibold text-[#DEC088] underline underline-offset-4">
+                  {SITE_CONFIG.brand.phoneDisplay}
+                </a>
+              </div>
               {/* ── STEP 1: CHOIX DU BARBIER & SERVICES (Exact booking.algerian.ref UX!) ── */}
               {step === 1 && (
                 <div className="space-y-4">
-                  {/* Dropdown 1: Barber Selection (Aziz / Yacine / Yousef / First available) */}
+                  {/* Dropdown 1: Barber selection */}
                   <div className="relative">
                     <button
                       type="button"
@@ -335,46 +344,46 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     {serviceListOpen && (
                       <div className="mt-1 overflow-hidden rounded-[2px] border border-white/25 bg-[#100F0D]">
                         <div className="luxury-scroll max-h-[300px] divide-y divide-white/6 overflow-y-auto">
-                          {ALL_SERVICES.map((svc) => {
-                            const checked = selectedServiceIds.includes(svc.id);
-                            return (
-                              <button
-                                key={svc.id}
-                                type="button"
-                                onClick={() => toggleService(svc.id)}
-                                className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-start transition-colors ${
-                                  checked
-                                    ? 'bg-[#DEC088]/18 text-[#F6EEDF]'
-                                    : 'text-[#CFC8BC] hover:bg-white/[0.035]'
-                                }`}
-                              >
-                                <span className="flex items-center gap-3.5 min-w-0">
-                                  {/* Square checkbox matching booking.algerian.ref */}
-                                  <span
-                                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border transition-colors ${
+                          {PRICING_CATEGORIES.map((category) => (
+                            <section key={category.id} aria-label={t(category.label, lang)}>
+                              <h4 className="bg-[#1D1913] px-4 py-2 text-xs font-semibold tracking-[0.08em] text-[#DEC088]">
+                                {t(category.label, lang)}
+                              </h4>
+                              {ALL_SERVICES.filter((svc) => svc.category === category.id).map((svc) => {
+                                const checked = selectedServiceIds.includes(svc.id);
+                                return (
+                                  <button
+                                    key={svc.id}
+                                    type="button"
+                                    aria-pressed={checked}
+                                    onClick={() => toggleService(svc.id)}
+                                    className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-start transition-colors ${
                                       checked
-                                        ? 'border-[#DEC088] bg-[#DEC088] text-[#080706]'
-                                        : 'border-white/35 bg-transparent'
+                                        ? 'bg-[#DEC088]/18 text-[#F6EEDF]'
+                                        : 'text-[#CFC8BC] hover:bg-white/[0.035]'
                                     }`}
                                   >
-                                    {checked && <Check className="h-3 w-3 stroke-[3]" />}
-                                  </span>
-                                  <span className="truncate text-[14px] font-medium">
-                                    {t(svc.title, lang)}
-                                  </span>
-                                </span>
-
-                                <span className="flex shrink-0 items-center gap-3.5 text-[12.5px]">
-                                  <span className="text-[#9E978C]">
-                                    {formatDuration(svc.durationMin, lang)}
-                                  </span>
-                                  <span className="min-w-[66px] text-end font-semibold text-[#DEC088]">
-                                    {formatPrice(svc.priceDa, lang)}
-                                  </span>
-                                </span>
-                              </button>
-                            );
-                          })}
+                                    <span className="flex min-w-0 items-center gap-3.5">
+                                      <span
+                                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border transition-colors ${
+                                          checked
+                                            ? 'border-[#DEC088] bg-[#DEC088] text-[#080706]'
+                                            : 'border-white/35 bg-transparent'
+                                        }`}
+                                      >
+                                        {checked && <Check className="h-3 w-3 stroke-[3]" />}
+                                      </span>
+                                      <span className="truncate text-[14px] font-medium">{t(svc.title, lang)}</span>
+                                    </span>
+                                    <span className="flex shrink-0 items-center gap-3.5 text-[12.5px]">
+                                      <span className="text-[#9E978C]">{formatDuration(svc.durationMin, lang)}</span>
+                                      <span className="min-w-[66px] text-end font-semibold text-[#DEC088]">{formatPrice(svc.priceDa, lang)}</span>
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </section>
+                          ))}
                         </div>
 
                         {/* Sticky "Valider" bar inside dropdown matching booking.algerian.ref/3.png */}
@@ -395,7 +404,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       {formatDuration(totalMinutes, lang)} · {COPY.selectedCount(chosenServices.length, lang)}
                     </span>
                     <span className="font-display text-base font-bold text-[#DEC088]">
-                      {formatPrice(totalPrice, lang)}
+                      {totalPriceDisplay}
                     </span>
                   </div>
                 </div>
@@ -481,7 +490,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         {t(COPY.summaryTotal, lang)} ({formatDuration(totalMinutes, lang)})
                       </span>
                       <span className="font-display font-bold text-[#DEC088]">
-                        {formatPrice(totalPrice, lang)}
+                        {totalPriceDisplay}
                       </span>
                     </div>
                   </div>
@@ -574,7 +583,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <div className="flex justify-between border-t border-white/10 pt-1.5">
                       <span className="text-[#9E978C]">{t(COPY.summaryTotal, lang)}</span>
                       <span className="font-display font-bold text-[#DEC088]">
-                        {formatPrice(totalPrice, lang)}
+                        {totalPriceDisplay}
                       </span>
                     </div>
                   </div>
@@ -582,7 +591,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               )}
 
               {/* ── STEP 4: DEMO CONFIRMATION SUMMARY ── */}
-              {step === 4 && refCode && (
+              {step === 4 && (
                 <div className="rounded-[3px] border border-[#DEC088]/35 bg-[#12100C] p-6">
                   <div className="flex items-center gap-2 text-[#DEC088]">
                     <CheckCircle2 className="h-5 w-5" />
@@ -590,9 +599,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       {t(COPY.demoBadge, lang)}
                     </span>
                   </div>
-                  <h3 className="font-display mt-3 text-xl font-bold text-[#F5EFE2]">
-                    #{refCode}
-                  </h3>
                   <p className="mt-2 text-[13px] leading-[1.65] text-[#A49D92]">
                     {t(COPY.demoNotice, lang)}
                   </p>
@@ -639,7 +645,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     <div className="flex justify-between border-t border-white/10 pt-2.5">
                       <span className="text-[#9E978C]">{t(COPY.summaryTotal, lang)}</span>
                       <span className="font-display text-lg font-bold text-[#DEC088]">
-                        {formatPrice(totalPrice, lang)}
+                        {totalPriceDisplay}
                       </span>
                     </div>
                   </div>

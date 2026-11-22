@@ -4,12 +4,12 @@ import {
   CRAFT_PILLARS,
   KIT_SLIDES,
   Language,
-  MASTER_BARBERS,
   RoutePath,
   SITE_CONFIG,
   t,
 } from '../data/site';
 import { PricingSection } from './PricingSection';
+import { BarberCards } from './BarbersSection';
 import { SignatureKitCanvas } from './SignatureKitCanvas';
 
 interface SubPageCommonProps {
@@ -206,8 +206,8 @@ export const AboutPage: React.FC<SubPageCommonProps> = ({
             </h1>
             <p className="mt-5 text-[14.5px] leading-[1.78] text-[#A49D92]">
               {lang === 'ar'
-                ? 'تأسس صالون عزيز باربر شوب لتقديم تجربة حلاقة رجالية تتجاوز المألوف. بقيادة عزيز وفريقه ياسين ويوسف، نجمع بين الدقة العصرية والطقوس التقليدية للعناية بالوجه والشعر واللحية في أجواء راقية.'
-                : 'Fondé pour offrir une véritable expérience de coiffure masculine, Aziz Barber Shop — Barber House réunit le savoir-faire de Aziz, Yacine et Yousef. Coupes millimétrées, soins barbe, visage et traitements capillaires dans un cadre feutré et soigné.'}
+                ? 'تأسس صالون عزيز باربر شوب لتقديم تجربة حلاقة رجالية تتجاوز المألوف. مع عزيز ويوسف ومحمد، نجمع بين الدقة العصرية والعناية بالوجه والشعر واللحية في أجواء راقية.'
+                : 'Aziz Barber Shop — Barber House réunit Aziz, Youcef et Mohamed autour de la coiffure et des soins de la barbe, du visage et des cheveux.'}
             </p>
           </div>
           <div className="lg:col-span-6 overflow-hidden rounded-[4px] border border-white/10">
@@ -219,7 +219,7 @@ export const AboutPage: React.FC<SubPageCommonProps> = ({
           </div>
         </div>
 
-        {/* Master Barbers: Aziz, Yacine, Yousef */}
+        {/* Illustrative portraits; actual staff photos were not supplied. */}
         <div className="mt-20">
           <p className="text-[11px] font-medium tracking-[0.22em] text-[#DEC088] uppercase">
             {lang === 'ar' ? 'فريقنا' : "L'ÉQUIPE"}
@@ -228,42 +228,7 @@ export const AboutPage: React.FC<SubPageCommonProps> = ({
             {lang === 'ar' ? 'الحلاقون المحترفون' : 'NOS BARBIERS'}
           </h2>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {MASTER_BARBERS.map((barber) => (
-              <div
-                key={barber.id}
-                className="overflow-hidden rounded-[3px] border border-white/10 bg-[#0E0D0C]"
-              >
-                <img
-                  src={barber.image}
-                  alt={lang === 'ar' ? barber.nameAr : barber.name}
-                  loading="lazy"
-                  className="h-64 w-full object-cover object-top"
-                />
-                <div className="p-6">
-                  <span className="text-[10.5px] tracking-[0.14em] text-[#DEC088] uppercase">
-                    {t(barber.role, lang)}
-                  </span>
-                  <h3 className="font-display mt-1 text-xl font-bold text-[#EDE0C4]">
-                    {lang === 'ar' ? barber.nameAr : barber.name}
-                  </h3>
-                  <p className="mt-2 text-xs text-[#9E978C]">{t(barber.experience, lang)}</p>
-                  <p className="mt-2.5 text-[13px] leading-[1.6] text-[#BEB7AA]">
-                    {t(barber.specialty, lang)}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onBookClick(undefined, barber.id)}
-                    className="mt-5 w-full rounded-[2px] border border-[#DEC088]/45 py-2.5 text-xs font-semibold tracking-[0.05em] text-[#EDE0C4] uppercase transition-colors hover:bg-[#DEC088] hover:text-[#080706]"
-                  >
-                    {lang === 'ar'
-                      ? `احجز مع ${barber.nameAr}`
-                      : `Réserver avec ${barber.name}`}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <BarberCards lang={lang} onBookClick={onBookClick} />
         </div>
 
         {/* Hours, Phone (0799 24 55 43) & Contact Form (Full Name + Phone only!) */}
